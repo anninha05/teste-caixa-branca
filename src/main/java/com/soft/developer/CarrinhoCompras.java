@@ -1,109 +1,28 @@
 package com.soft.developer;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 public class CarrinhoCompras {
+    private int estoque = 10;
 
-    private final List<ItemCarrinho> itens = new ArrayList<>();
+    public int getEstoque() {
+        return estoque;
+    }
 
-    /**
-     * Adiciona um produto ao carrinho.
-     */
-    public void adicionarProduto(Produto produto, int quantidade) {
-
-        if (produto == null) {
-            throw new IllegalArgumentException("Produto inválido.");
-        }
-
+    public double finalizarCompra(int quantidade, boolean temDesconto) {
         if (quantidade <= 0) {
-            throw new IllegalArgumentException(
-                "A quantidade deve ser maior que zero."
-            );
+            throw new IllegalArgumentException("Quantidade inválida.");
         }
 
-        // Calcula quanto desse produto já está no carrinho
-        int quantidadeNoCarrinho = 0;
-
-        for (ItemCarrinho item : itens) {
-            if (item.getProduto().getId().equals(produto.getId())) {
-                quantidadeNoCarrinho += item.getQuantidade();
-            }
+        if (quantidade > estoque) {
+            throw new IllegalStateException("Estoque insuficiente.");
         }
 
-        // Verifica estoque disponível
-        if (quantidadeNoCarrinho + quantidade > produto.getEstoque()) {
-            throw new IllegalArgumentException(
-                "Estoque insuficiente para o produto: "
-                + produto.getNome()
-            );
+        double total = quantidade * 10.0;
+
+        if (temDesconto) {
+            total = total * 0.9;
         }
 
-        itens.add(new ItemCarrinho(produto, quantidade));
-    }
-
-    /**
-     * Retorna os itens existentes no carrinho.
-     */
-    public List<ItemCarrinho> getItens() {
-        return Collections.unmodifiableList(itens);
-    }
-
-    /**
-     * Calcula o valor total da compra.
-     */
-    public double calcularTotal() {
-
-        double total = 0.0;
-
-        for (ItemCarrinho item : itens) {
-            total += item.getSubtotal();
-        }
-
+        estoque = estoque - quantidade;
         return total;
-    }
-
-    /**
-     * Remove todos os itens do carrinho.
-     */
-    public void limpar() {
-        itens.clear();
-    }
-
-    /**
-     * Finaliza a compra e atualiza o estoque.
-     */
-    public void finalizarCompra() {
-
-        if (itens.isEmpty()) {
-            throw new IllegalStateException(
-                "O carrinho está vazio."
-            );
-        }
-
-        // Verificação antes de alterar o estoque
-        for (ItemCarrinho item : itens) {
-
-            if (item.getQuantidade()
-                    > item.getProduto().getEstoque()) {
-
-                throw new IllegalStateException(
-                    "Estoque insuficiente para o produto: "
-                    + item.getProduto().getNome()
-                );
-            }
-        }
-
-        // Atualiza estoque
-        for (ItemCarrinho item : itens) {
-
-            item.getProduto().reduzirEstoque(
-                item.getQuantidade()
-            );
-        }
-
-        // Esvazia carrinho
-        itens.clear();
     }
 }
